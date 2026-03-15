@@ -59,7 +59,8 @@ Artifact:
   name: str
   description: str
   type: str                 # pottery, sculpture, jewelry, etc.
-  site_id: str              # FK to Site
+  site_id: str | null        # FK to Site. Null if artifact matches a region but not a specific site.
+  region: str | null          # Fallback geographic context when site_id is null
   period: str | null        # e.g., "Late Bronze Age", "300-200 BCE"
   date_range_start: int | null  # year (negative for BCE)
   date_range_end: int | null
@@ -115,7 +116,8 @@ All stages are idempotent and write manifests of what they processed.
 
 `pipeline/stage_1_site_matching.py`
 
-- Parse coordinates from the raw `places.json` format ("40.93360567 N") into numeric lat/lng
+- Parse coordinates from the raw `places.json` format ("40.93360567 N") into numeric lat/lng, negating for S/W directions
+- Handle edge cases: 2 records in the dataset have null names — these are matched by coordinates only
 - Query Wikidata SPARQL for archaeological sites within radius of each site's coordinates + fuzzy name matching
 - Query Pleiades API by name and coordinates
 - Store matched external IDs onto each Site record
@@ -130,12 +132,16 @@ For matched sites, query multiple APIs:
 
 - **Wikidata** — SPARQL for artifacts with `P189` (location of discovery) linking to matched site
 - **Metropolitan Museum API** — search by geography/culture/medium, filtered to ceramics and decorated objects
-- **British Museum API** — search by find-spot coordinates
-- **Harvard Peabody Museum** — search by site name/region
+- **British Museum Linked Open Data** — SPARQL queries against `collection.britishmuseum.org` for objects by find-spot and type. Note: the BM does not have a REST search API; all queries go through their SPARQL endpoint.
+- **Harvard Art Museums API** — search by culture/classification/technique (requires API key). Note: this is the Harvard Art Museums collection, not the Peabody Museum of Archaeology, which does not expose a public API.
 
 Features:
-- Deduplication across sources (same artifact may appear in multiple)
-- Rate limiting and caching — APIs hit once, raw responses saved to `data/raw/`
+- Deduplication across sources using a multi-signal matching approach:
+  - Primary: accession number / inventory ID match across sources
+  - Secondary: fuzzy name + site + date range match (Levenshtein distance < 3 on name, same site, overlapping date range)
+  - When duplicates are found, all source provenance records are preserved on the merged artifact. Metadata conflicts are resolved by source priority: Wikidata (most structured) > Met > Harvard > British Museum (least structured SPARQL results).
+- Rate limiting per source: Wikidata SPARQL (respect User-Agent policy, 60s query timeout), Met Museum (1 req/s), Harvard (2500 req/day with key), BM SPARQL (conservative 1 req/2s)
+- File-based response caching — raw responses saved to `data/raw/{source}/` with content hash filenames
 - Output: `data/artifacts/` — one JSON file per artifact with full provenance
 
 ### Stage 3 — Image Collection
@@ -143,7 +149,12 @@ Features:
 `pipeline/stage_3_image_collection.py`
 
 - Download available images per artifact, respecting licenses
-- Run **vtracer** to convert raster images to SVG (better quality than potrace for this use case)
+- Checkpoint tracking: a download manifest (`data/manifests/stage_3_downloads.json`) records each successfully downloaded image with its hash. Partial/failed downloads are detected by size/hash mismatch and re-fetched on re-run.
+- **Image preprocessing before tracing:**
+  1. Prefer line drawings / catalog illustrations over photographs when multiple images are available (detected by source metadata or low color variance heuristic)
+  2. For photographs: background removal (rembg), edge detection (Canny), and threshold to high-contrast binary image before tracing
+  3. Quality gate: traced SVGs with path count below a minimum threshold (too simple) or above a maximum (noisy photograph trace) are flagged for manual review and excluded from map markers
+- Run **vtracer** on preprocessed images to produce SVGs
 - Store originals in `data/images/`, traced SVGs in `data/svgs/`
 - Output: updated ArtifactImage records with provenance
 
@@ -154,7 +165,7 @@ Features:
 Two paths:
 
 - **Text path:** NLP extraction from artifact descriptions — regex + keyword matching for known motif vocabulary: spiral, meander, cross, chevron, wave, guilloche, rosette, palmette, zigzag, concentric circles, hatching, etc.
-- **Vision path:** Run CLIP (`clip-vit-b-32`) on artifact images, store embeddings in `data/embeddings/`
+- **Vision path:** Run CLIP (`clip-vit-b-32`) on artifact images, store embeddings in `data/embeddings/` as NumPy `.npz` archives (binary, ~50x more compact than JSON for 512-dim float vectors). A separate metadata index (`data/embeddings/index.json`) maps artifact IDs to their position in the archive.
 
 Both paths produce provenance records noting model version and parameters.
 
@@ -174,11 +185,12 @@ Both paths produce provenance records noting model version and parameters.
 
 Package for Next.js consumption into `web/public/data/`:
 
-- `sites.json` — all sites with linked artifact counts
-- `artifacts/{site_id}.json` — artifacts per site
+- `sites.json` — all sites with linked artifact counts (lightweight, ~1-2 MB)
+- `artifacts/{site_id}.json` — artifacts per site (chunked by site, lazy-loaded by app)
 - `svgs/` — traced SVG files
-- `similarity.json` — precomputed similarity graph
-- `provenance.json` — full provenance chain for every record
+- `similarity/{artifact_id}.json` — similarity edges per artifact (chunked, lazy-loaded on artifact detail view, not a single monolithic file)
+- `provenance/{site_id}.json` — provenance chains per site (chunked, lazy-loaded)
+- Size budget: total `web/public/data/` should stay under 50 MB for viable GitHub Pages hosting. If exceeded, Stage 6 applies filters (e.g., only export artifacts with images, cap similarity edges at top-10).
 
 ## Next.js Static App
 
