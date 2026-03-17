@@ -1,9 +1,10 @@
 import json
 import asyncio
+import os
 from pyppeteer import launch
 
 BASE_URL = 'http://www.ancientlocations.net/'
-OUTPUT_FILE = 'places.json'
+OUTPUT_FILE = os.path.join(os.path.dirname(__file__), '..', 'data', 'raw', 'places.json')
 
 def report_schema():
     return dict.fromkeys([
