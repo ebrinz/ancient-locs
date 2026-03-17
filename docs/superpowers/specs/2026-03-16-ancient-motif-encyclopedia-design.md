@@ -125,8 +125,9 @@ MotifCluster:
   label: str | null           # auto-generated or manually named later
   member_count: int
   centroid_embedding: [float]  # cluster center in CLIP space
-  canonical_svg_path: str      # averaged SVG representing this motif type
+  canonical_svg_path: str      # medoid SVG representing this motif type
   member_segment_ids: [str]    # FK to MotifSegments in this cluster
+  provenance: ProvenanceRecord # records HDBSCAN params, embedding model, input count, timestamp
 ```
 
 ### SimilarityEdge
@@ -176,7 +177,7 @@ For matched sites, query 5 APIs — **all artifact types with images, no medium/
 
 - **Wikidata** — SPARQL for artifacts with `P189` (location of discovery) linking to matched site. All types.
 - **Metropolitan Museum API** — search by geography/culture across all ancient departments (Greek & Roman, Egyptian, Ancient Near Eastern, Asian, Arts of Africa/Oceania/Americas). No medium filter.
-- **British Museum Linked Open Data** — SPARQL queries against `collection.britishmuseum.org` for objects by find-spot. All types. Note: the BM does not have a REST search API; all queries go through their SPARQL endpoint.
+- **British Museum Linked Open Data** — SPARQL queries against `collection.britishmuseum.org` for objects by find-spot. All types. Note: the BM does not have a REST search API; all queries go through their SPARQL endpoint. **Reliability warning:** this endpoint has historically gone offline for extended periods. The pipeline must gracefully skip BM if unavailable — log a warning and continue with the other 4 sources.
 - **Harvard Art Museums API** — search by culture/classification (requires API key). All types. Note: this is the Harvard Art Museums collection, not the Peabody Museum of Archaeology, which does not expose a public API.
 - **Wikimedia Commons** — query via MediaWiki API using categories ("Ancient art", "Petroglyphs", "Cave paintings", "Archaeological artifacts by country", etc.). Large volume, CC-licensed, geographic metadata in categories.
 
@@ -196,7 +197,7 @@ Features:
 
 - Download available images per artifact, respecting licenses
 - Checkpoint tracking: a download manifest (`data/manifests/stage_3_downloads.json`) records each successfully downloaded image with its hash. Partial/failed downloads are detected by size/hash mismatch and re-fetched on re-run.
-- In **dev mode**: save images to `data/images/`. In **production mode**: images are held in memory for processing, then discarded.
+- In **dev mode**: save images to `data/images/`. In **production mode**: images are processed one-at-a-time in a streaming fashion (download → segment → embed → discard) to avoid memory pressure. This means Stages 3-5 run as a fused streaming pipeline in production mode, while in dev mode they remain separate stages for debuggability.
 - Output: updated ArtifactImage records with provenance
 
 ### Stage 4 — Motif Segmentation
@@ -206,7 +207,10 @@ Features:
 **CLIPSeg-based motif extraction:**
 
 1. Run CLIPSeg on each artifact image with text prompts: "decorative motif", "carved pattern", "painted design", "geometric decoration", "engraved symbol"
-2. For each image, CLIPSeg produces segmentation masks for regions matching the prompts
+2. **Heatmap to mask conversion:** CLIPSeg produces a single activation heatmap per prompt, not discrete masks. Conversion process:
+   - For each prompt, threshold the heatmap using Otsu's method (adaptive per image)
+   - Take the maximum activation across all prompts (union strategy — a region matching any prompt is kept)
+   - Run connected-component analysis (OpenCV `connectedComponentsWithStats`) to extract discrete regions
 3. **Segment filtering** — keep segments likely to be decorative motifs:
    - Size: between 3% and 40% of total image area (too small = noise, too large = the whole object)
    - Contour complexity: segment boundary has enough complexity to be "interesting" (perimeter² / area ratio above threshold)
@@ -230,19 +234,20 @@ Features:
 `pipeline/stage_6_similarity.py`
 
 **Similarity:**
-- **Tag-based:** Jaccard similarity on motif tag sets (from parent artifacts)
-- **Embedding-based:** Cosine similarity on CLIP vectors of segments
-- **Combined score:** Weighted blend (configurable in `config.py`)
+- **Embedding-based:** Cosine similarity on CLIP vectors of segments (primary signal — operates at segment level)
+- **Tag-based:** Jaccard similarity on motif tag sets from parent artifacts (secondary signal — operates at artifact level, inherited by all segments of that artifact). Note: this creates an asymmetry where segments from the same artifact share identical tag scores. This is acceptable because tag similarity serves as a coarse filter while embedding similarity provides fine-grained visual matching.
+- **Combined score:** Weighted blend (configurable in `config.py`), defaulting to heavier embedding weight (0.7 embedding / 0.3 tag) given the segment-level focus
 - Precompute top-N similar segments per segment (default: top 20)
 
 **Clustering:**
 - Run HDBSCAN on the full CLIP embedding space to discover emergent motif types
+- `min_cluster_size` is sensitive and requires empirical tuning. Strategy: run with multiple values (e.g., 5, 15, 30, 50), evaluate using silhouette scores and manual inspection of canonical SVGs in dev mode, select the value that produces interpretable clusters. Store the chosen parameter in the cluster provenance record.
 - Each cluster = a discovered motif category (spirals, concentric circles, crosses, etc.)
 - Clusters are not predefined — they emerge from the data
 - For each cluster:
   - Assign an auto-generated label based on the most common text motif tags among member artifacts
   - Compute centroid embedding
-  - **Generate canonical SVG:** normalize member SVGs (center, scale to uniform size), rasterize to same-size bitmaps, average pixel values, threshold to binary, re-trace to SVG via vtracer. The result is a "platonic" representation of the motif type.
+  - **Generate canonical SVG:** Primary method: select the medoid (member whose embedding is closest to the centroid) and use its SVG as the canonical representation. This is deterministic and always produces a real motif. Optional experimental variant: normalize member SVGs (center, scale to uniform size), rasterize to same-size bitmaps, average pixel values, threshold to binary, re-trace to SVG via vtracer. The averaged variant may produce blurred results if members have different orientations; the medoid is the safe default.
 
 - Output: `data/similarity/` (adjacency lists) and `data/clusters/` (MotifCluster records with canonical SVGs)
 
@@ -259,7 +264,7 @@ Package for Next.js consumption into `web/public/data/`:
 - `svgs/canonical/` — one canonical SVG per motif cluster (used as map markers)
 - `similarity/{segment_id}.json` — similarity edges per segment (chunked, lazy-loaded)
 - `provenance/{site_id}.json` — provenance chains per site (chunked, lazy-loaded)
-- Size budget: total `web/public/data/` should stay under 50 MB for viable GitHub Pages hosting. If exceeded, Stage 7 applies filters (e.g., only export segments with good SVGs, cap similarity edges at top-10).
+- Size budget: total `web/public/data/` should stay under 50 MB for viable GitHub Pages hosting. If exceeded, Stage 7 applies filters in priority order: (1) reduce similarity edges to top-5 per segment, (2) drop segments without SVGs, (3) subsample segments per cluster to top-50 by centroid proximity, (4) drop smallest clusters.
 
 ## Next.js Static App
 
