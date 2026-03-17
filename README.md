@@ -1,72 +1,217 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 280" fill="none">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 300" fill="none">
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="900" y2="280" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#1a0e0a"/>
-      <stop offset="50%" stop-color="#2d1810"/>
-      <stop offset="100%" stop-color="#1a0e0a"/>
+    <linearGradient id="bg" x1="0" y1="0" x2="900" y2="300" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#0f0a07"/>
+      <stop offset="30%" stop-color="#1e140d"/>
+      <stop offset="70%" stop-color="#1e140d"/>
+      <stop offset="100%" stop-color="#0f0a07"/>
     </linearGradient>
     <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#c2703e"/>
-      <stop offset="50%" stop-color="#e8a86d"/>
-      <stop offset="100%" stop-color="#c2703e"/>
+      <stop offset="0%" stop-color="#9e6b3a"/>
+      <stop offset="40%" stop-color="#d4a05a"/>
+      <stop offset="60%" stop-color="#e8bf7e"/>
+      <stop offset="100%" stop-color="#9e6b3a"/>
     </linearGradient>
-    <linearGradient id="fade" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#e8a86d" stop-opacity="0.6"/>
-      <stop offset="100%" stop-color="#e8a86d" stop-opacity="0"/>
+    <linearGradient id="goldV" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#d4a05a"/>
+      <stop offset="100%" stop-color="#9e6b3a"/>
     </linearGradient>
+    <radialGradient id="glow" cx="450" cy="130" r="280" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#d4a05a" stop-opacity="0.06"/>
+      <stop offset="100%" stop-color="#d4a05a" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="noise" x="0" y="0" width="200" height="200" patternUnits="userSpaceOnUse">
+      <circle cx="23" cy="17" r="0.5" fill="#d4a05a" opacity="0.04"/>
+      <circle cx="67" cy="43" r="0.4" fill="#d4a05a" opacity="0.03"/>
+      <circle cx="112" cy="8" r="0.6" fill="#d4a05a" opacity="0.03"/>
+      <circle cx="156" cy="61" r="0.3" fill="#d4a05a" opacity="0.05"/>
+      <circle cx="34" cy="89" r="0.5" fill="#d4a05a" opacity="0.03"/>
+      <circle cx="89" cy="72" r="0.4" fill="#d4a05a" opacity="0.04"/>
+      <circle cx="145" cy="97" r="0.5" fill="#d4a05a" opacity="0.03"/>
+      <circle cx="178" cy="134" r="0.4" fill="#d4a05a" opacity="0.04"/>
+      <circle cx="12" cy="156" r="0.6" fill="#d4a05a" opacity="0.03"/>
+      <circle cx="56" cy="178" r="0.3" fill="#d4a05a" opacity="0.05"/>
+      <circle cx="101" cy="145" r="0.5" fill="#d4a05a" opacity="0.03"/>
+      <circle cx="190" cy="167" r="0.4" fill="#d4a05a" opacity="0.04"/>
+    </pattern>
+    <clipPath id="bannerClip"><rect width="900" height="300" rx="8"/></clipPath>
   </defs>
-  <rect width="900" height="280" rx="12" fill="url(#bg)"/>
-  <rect x="1" y="1" width="898" height="278" rx="11" stroke="url(#gold)" stroke-width="1" fill="none" opacity="0.3"/>
 
-  <!-- Spiral motif left -->
-  <g transform="translate(80, 140)" opacity="0.15">
-    <path d="M0,0 C0,-20 20,-35 35,-35 C55,-35 70,-20 70,0 C70,25 50,45 25,45 C-5,45 -25,25 -25,0 C-25,-30 0,-55 30,-55 C65,-55 85,-30 85,5 C85,45 55,70 20,70" stroke="#e8a86d" stroke-width="2.5" fill="none"/>
+  <!-- Background -->
+  <g clip-path="url(#bannerClip)">
+    <rect width="900" height="300" fill="url(#bg)"/>
+    <rect width="900" height="300" fill="url(#noise)"/>
+    <rect width="900" height="300" fill="url(#glow)"/>
+
+    <!-- Greek meander border top -->
+    <g opacity="0.18" stroke="#d4a05a" stroke-width="1.2" fill="none">
+      <path d="M0,16 L900,16"/>
+      <path d="M0,28 L900,28"/>
+      <!-- Meander keys -->
+      <g transform="translate(20,16)">
+        <path d="M0,0 L0,12 L8,12 L8,4 L4,4 L4,8 L0,8" />
+        <path d="M16,0 L16,12 L24,12 L24,4 L20,4 L20,8 L16,8" />
+        <path d="M32,0 L32,12 L40,12 L40,4 L36,4 L36,8 L32,8" />
+        <path d="M48,0 L48,12 L56,12 L56,4 L52,4 L52,8 L48,8" />
+        <path d="M64,0 L64,12 L72,12 L72,4 L68,4 L68,8 L64,8" />
+      </g>
+      <g transform="translate(780,16) scale(-1,1)">
+        <path d="M0,0 L0,12 L8,12 L8,4 L4,4 L4,8 L0,8" />
+        <path d="M16,0 L16,12 L24,12 L24,4 L20,4 L20,8 L16,8" />
+        <path d="M32,0 L32,12 L40,12 L40,4 L36,4 L36,8 L32,8" />
+        <path d="M48,0 L48,12 L56,12 L56,4 L52,4 L52,8 L48,8" />
+        <path d="M64,0 L64,12 L72,12 L72,4 L68,4 L68,8 L64,8" />
+      </g>
+    </g>
+
+    <!-- Greek meander border bottom -->
+    <g opacity="0.18" stroke="#d4a05a" stroke-width="1.2" fill="none" transform="translate(0,256)">
+      <path d="M0,16 L900,16"/>
+      <path d="M0,28 L900,28"/>
+      <g transform="translate(20,16)">
+        <path d="M0,0 L0,12 L8,12 L8,4 L4,4 L4,8 L0,8" />
+        <path d="M16,0 L16,12 L24,12 L24,4 L20,4 L20,8 L16,8" />
+        <path d="M32,0 L32,12 L40,12 L40,4 L36,4 L36,8 L32,8" />
+        <path d="M48,0 L48,12 L56,12 L56,4 L52,4 L52,8 L48,8" />
+        <path d="M64,0 L64,12 L72,12 L72,4 L68,4 L68,8 L64,8" />
+      </g>
+      <g transform="translate(780,16) scale(-1,1)">
+        <path d="M0,0 L0,12 L8,12 L8,4 L4,4 L4,8 L0,8" />
+        <path d="M16,0 L16,12 L24,12 L24,4 L20,4 L20,8 L16,8" />
+        <path d="M32,0 L32,12 L40,12 L40,4 L36,4 L36,8 L32,8" />
+        <path d="M48,0 L48,12 L56,12 L56,4 L52,4 L52,8 L48,8" />
+        <path d="M64,0 L64,12 L72,12 L72,4 L68,4 L68,8 L64,8" />
+      </g>
+    </g>
+
+    <!-- Left decorative panel: Spiral / Triskelion -->
+    <g transform="translate(90, 130)" opacity="0.22">
+      <!-- Triple spiral (triskelion) -->
+      <path d="M0,-2 C0,-14 10,-24 22,-24 C36,-24 46,-14 46,-2 C46,14 34,26 18,26 C0,26 -12,14 -12,-2 C-12,-20 2,-34 22,-34 C44,-34 58,-20 58,-2 C58,22 40,38 18,38" stroke="#d4a05a" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+      <path d="M0,-2 C0,8 -8,16 -18,16 C-30,16 -38,8 -38,-2 C-38,-16 -28,-26 -14,-26 C2,-26 14,-16 14,-2" stroke="#d4a05a" stroke-width="1.8" fill="none" stroke-linecap="round" transform="rotate(120)"/>
+      <path d="M0,-2 C0,8 -8,16 -18,16 C-30,16 -38,8 -38,-2 C-38,-16 -28,-26 -14,-26 C2,-26 14,-16 14,-2" stroke="#d4a05a" stroke-width="1.8" fill="none" stroke-linecap="round" transform="rotate(240)"/>
+      <circle cx="0" cy="0" r="3" fill="#d4a05a" opacity="0.4"/>
+    </g>
+
+    <!-- Right decorative panel: Rosette / Sun disc -->
+    <g transform="translate(810, 130)" opacity="0.22">
+      <!-- 8-petal rosette -->
+      <circle cx="0" cy="0" r="5" fill="#d4a05a" opacity="0.3"/>
+      <circle cx="0" cy="0" r="30" stroke="#d4a05a" stroke-width="1" fill="none"/>
+      <g stroke="#d4a05a" stroke-width="1.5" fill="none">
+        <ellipse cx="0" cy="-18" rx="7" ry="14" transform="rotate(0)"/>
+        <ellipse cx="0" cy="-18" rx="7" ry="14" transform="rotate(45)"/>
+        <ellipse cx="0" cy="-18" rx="7" ry="14" transform="rotate(90)"/>
+        <ellipse cx="0" cy="-18" rx="7" ry="14" transform="rotate(135)"/>
+        <ellipse cx="0" cy="-18" rx="7" ry="14" transform="rotate(180)"/>
+        <ellipse cx="0" cy="-18" rx="7" ry="14" transform="rotate(225)"/>
+        <ellipse cx="0" cy="-18" rx="7" ry="14" transform="rotate(270)"/>
+        <ellipse cx="0" cy="-18" rx="7" ry="14" transform="rotate(315)"/>
+      </g>
+      <circle cx="0" cy="0" r="38" stroke="#d4a05a" stroke-width="0.8" fill="none" stroke-dasharray="3 5"/>
+    </g>
+
+    <!-- Left column: Chevrons / zigzag -->
+    <g transform="translate(32, 50)" opacity="0.10" stroke="#d4a05a" stroke-width="1.2" fill="none">
+      <path d="M0,0 L8,10 L16,0"/>
+      <path d="M0,16 L8,26 L16,16"/>
+      <path d="M0,32 L8,42 L16,32"/>
+      <path d="M0,48 L8,58 L16,48"/>
+      <path d="M0,64 L8,74 L16,64"/>
+      <path d="M0,80 L8,90 L16,80"/>
+      <path d="M0,96 L8,106 L16,96"/>
+      <path d="M0,112 L8,122 L16,112"/>
+      <path d="M0,128 L8,138 L16,128"/>
+      <path d="M0,144 L8,154 L16,144"/>
+      <path d="M0,160 L8,170 L16,160"/>
+    </g>
+
+    <!-- Right column: Chevrons / zigzag -->
+    <g transform="translate(852, 50)" opacity="0.10" stroke="#d4a05a" stroke-width="1.2" fill="none">
+      <path d="M0,0 L8,10 L16,0"/>
+      <path d="M0,16 L8,26 L16,16"/>
+      <path d="M0,32 L8,42 L16,32"/>
+      <path d="M0,48 L8,58 L16,48"/>
+      <path d="M0,64 L8,74 L16,64"/>
+      <path d="M0,80 L8,90 L16,80"/>
+      <path d="M0,96 L8,106 L16,96"/>
+      <path d="M0,112 L8,122 L16,112"/>
+      <path d="M0,128 L8,138 L16,128"/>
+      <path d="M0,144 L8,154 L16,144"/>
+      <path d="M0,160 L8,170 L16,160"/>
+    </g>
+
+    <!-- Scattered archaeological dots -->
+    <g opacity="0.08" fill="#d4a05a">
+      <circle cx="170" cy="60" r="1.5"/><circle cx="195" cy="78" r="1"/>
+      <circle cx="220" cy="52" r="1.8"/><circle cx="260" cy="70" r="1.2"/>
+      <circle cx="640" cy="58" r="1.5"/><circle cx="680" cy="72" r="1"/>
+      <circle cx="720" cy="48" r="1.8"/><circle cx="745" cy="68" r="1.2"/>
+      <circle cx="175" cy="220" r="1.2"/><circle cx="210" cy="235" r="1"/>
+      <circle cx="690" cy="225" r="1.5"/><circle cx="730" cy="210" r="1"/>
+    </g>
+
+    <!-- Title ornament: left rule -->
+    <g opacity="0.35">
+      <line x1="170" y1="92" x2="330" y2="92" stroke="url(#goldV)" stroke-width="0.6"/>
+      <line x1="200" y1="88" x2="200" y2="96" stroke="#d4a05a" stroke-width="0.6"/>
+      <line x1="230" y1="88" x2="230" y2="96" stroke="#d4a05a" stroke-width="0.6"/>
+      <line x1="260" y1="88" x2="260" y2="96" stroke="#d4a05a" stroke-width="0.6"/>
+      <line x1="290" y1="88" x2="290" y2="96" stroke="#d4a05a" stroke-width="0.6"/>
+      <circle cx="170" cy="92" r="2.5" fill="#d4a05a" opacity="0.5"/>
+      <circle cx="330" cy="92" r="2.5" fill="#d4a05a" opacity="0.5"/>
+    </g>
+    <!-- Title ornament: right rule -->
+    <g opacity="0.35">
+      <line x1="570" y1="92" x2="730" y2="92" stroke="url(#goldV)" stroke-width="0.6"/>
+      <line x1="610" y1="88" x2="610" y2="96" stroke="#d4a05a" stroke-width="0.6"/>
+      <line x1="640" y1="88" x2="640" y2="96" stroke="#d4a05a" stroke-width="0.6"/>
+      <line x1="670" y1="88" x2="670" y2="96" stroke="#d4a05a" stroke-width="0.6"/>
+      <line x1="700" y1="88" x2="700" y2="96" stroke="#d4a05a" stroke-width="0.6"/>
+      <circle cx="570" cy="92" r="2.5" fill="#d4a05a" opacity="0.5"/>
+      <circle cx="730" cy="92" r="2.5" fill="#d4a05a" opacity="0.5"/>
+    </g>
+
+    <!-- Title -->
+    <text x="450" y="100" text-anchor="middle" font-family="Georgia, 'Palatino Linotype', 'Book Antiqua', serif" font-size="46" font-weight="bold" fill="url(#gold)" letter-spacing="8">ANCIENT LOCS</text>
+
+    <!-- Subtitle band -->
+    <text x="450" y="128" text-anchor="middle" font-family="Georgia, 'Palatino Linotype', serif" font-size="13" fill="#d4a05a" opacity="0.55" letter-spacing="10" font-variant="small-caps">MOTIF ENCYCLOPEDIA</text>
+
+    <!-- Thin divider with diamond -->
+    <g opacity="0.3">
+      <line x1="240" y1="148" x2="440" y2="148" stroke="#d4a05a" stroke-width="0.5"/>
+      <rect x="445" y="143" width="10" height="10" transform="rotate(45 450 148)" fill="none" stroke="#d4a05a" stroke-width="0.8"/>
+      <line x1="460" y1="148" x2="660" y2="148" stroke="#d4a05a" stroke-width="0.5"/>
+    </g>
+
+    <!-- Description -->
+    <text x="450" y="175" text-anchor="middle" font-family="'Helvetica Neue', 'Segoe UI', Arial, sans-serif" font-size="14" fill="#c4a882" letter-spacing="0.8">Tracing decorative motifs across 8,860 ancient sites</text>
+
+    <!-- Tech stack pills -->
+    <g font-family="'SF Mono', 'Fira Code', 'Consolas', monospace" font-size="10" text-anchor="middle">
+      <g transform="translate(300, 200)">
+        <rect x="-52" y="-11" width="104" height="22" rx="11" fill="#d4a05a" opacity="0.08" stroke="#d4a05a" stroke-width="0.5" stroke-opacity="0.2"/>
+        <text fill="#b8956a" letter-spacing="0.5">CLIPSeg</text>
+      </g>
+      <g transform="translate(450, 200)">
+        <rect x="-60" y="-11" width="120" height="22" rx="11" fill="#d4a05a" opacity="0.08" stroke="#d4a05a" stroke-width="0.5" stroke-opacity="0.2"/>
+        <text fill="#b8956a" letter-spacing="0.5">CLIP embeddings</text>
+      </g>
+      <g transform="translate(600, 200)">
+        <rect x="-52" y="-11" width="104" height="22" rx="11" fill="#d4a05a" opacity="0.08" stroke="#d4a05a" stroke-width="0.5" stroke-opacity="0.2"/>
+        <text fill="#b8956a" letter-spacing="0.5">HDBSCAN</text>
+      </g>
+    </g>
+
+    <!-- Bottom motif labels -->
+    <text x="90" y="248" text-anchor="middle" font-family="'SF Mono', 'Fira Code', 'Consolas', monospace" font-size="8" fill="#6b5040" letter-spacing="2">TRISKELION</text>
+    <text x="810" y="248" text-anchor="middle" font-family="'SF Mono', 'Fira Code', 'Consolas', monospace" font-size="8" fill="#6b5040" letter-spacing="2">ROSETTE</text>
+
+    <!-- Outer border -->
+    <rect x="1" y="1" width="898" height="298" rx="7" stroke="#d4a05a" stroke-width="0.8" fill="none" opacity="0.15"/>
+    <rect x="6" y="6" width="888" height="288" rx="5" stroke="#d4a05a" stroke-width="0.4" fill="none" opacity="0.10"/>
   </g>
-
-  <!-- Wave motif bottom -->
-  <g opacity="0.08">
-    <path d="M0,230 Q50,200 100,230 Q150,260 200,230 Q250,200 300,230 Q350,260 400,230 Q450,200 500,230 Q550,260 600,230 Q650,200 700,230 Q750,260 800,230 Q850,200 900,230" stroke="#e8a86d" stroke-width="1.5" fill="none"/>
-    <path d="M0,245 Q50,215 100,245 Q150,275 200,245 Q250,215 300,245 Q350,275 400,245 Q450,215 500,245 Q550,275 600,245 Q650,215 700,245 Q750,275 800,245 Q850,215 900,245" stroke="#e8a86d" stroke-width="1" fill="none"/>
-  </g>
-
-  <!-- Cross motif right -->
-  <g transform="translate(790, 80)" opacity="0.12">
-    <line x1="-20" y1="0" x2="20" y2="0" stroke="#e8a86d" stroke-width="2.5"/>
-    <line x1="0" y1="-20" x2="0" y2="20" stroke="#e8a86d" stroke-width="2.5"/>
-    <circle cx="0" cy="0" r="25" stroke="#e8a86d" stroke-width="1.5" fill="none"/>
-  </g>
-
-  <!-- Concentric circles motif -->
-  <g transform="translate(790, 190)" opacity="0.1">
-    <circle cx="0" cy="0" r="8" stroke="#e8a86d" stroke-width="1.5" fill="none"/>
-    <circle cx="0" cy="0" r="16" stroke="#e8a86d" stroke-width="1.5" fill="none"/>
-    <circle cx="0" cy="0" r="24" stroke="#e8a86d" stroke-width="1.5" fill="none"/>
-  </g>
-
-  <!-- Dots pattern -->
-  <g opacity="0.06">
-    <circle cx="160" cy="50" r="2" fill="#e8a86d"/>
-    <circle cx="200" cy="70" r="1.5" fill="#e8a86d"/>
-    <circle cx="240" cy="45" r="2.5" fill="#e8a86d"/>
-    <circle cx="680" cy="55" r="2" fill="#e8a86d"/>
-    <circle cx="720" cy="40" r="1.5" fill="#e8a86d"/>
-    <circle cx="650" cy="65" r="2" fill="#e8a86d"/>
-  </g>
-
-  <!-- Title -->
-  <text x="450" y="95" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="42" font-weight="bold" fill="url(#gold)" letter-spacing="2">ANCIENT LOCS</text>
-  <text x="450" y="130" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="16" fill="#e8a86d" opacity="0.7" letter-spacing="6">MOTIF ENCYCLOPEDIA</text>
-
-  <!-- Divider -->
-  <line x1="280" y1="148" x2="620" y2="148" stroke="url(#gold)" stroke-width="0.5" opacity="0.4"/>
-
-  <!-- Subtitle -->
-  <text x="450" y="175" text-anchor="middle" font-family="'Helvetica Neue', Arial, sans-serif" font-size="13" fill="#b8977a" letter-spacing="1">Tracing decorative motifs across 8,860 ancient sites</text>
-  <text x="450" y="198" text-anchor="middle" font-family="'Helvetica Neue', Arial, sans-serif" font-size="12" fill="#8a6e58" letter-spacing="0.5">CLIPSeg segmentation  ·  CLIP embeddings  ·  HDBSCAN clustering</text>
-
-  <!-- Bottom motif labels -->
-  <text x="80" y="265" text-anchor="middle" font-family="'Courier New', monospace" font-size="9" fill="#6b5040" letter-spacing="1">SPIRAL</text>
-  <text x="790" y="265" text-anchor="middle" font-family="'Courier New', monospace" font-size="9" fill="#6b5040" letter-spacing="1">CROSS</text>
 </svg>
 
 # Ancient Locs — Motif Encyclopedia
