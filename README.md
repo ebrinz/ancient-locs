@@ -2,22 +2,21 @@
   <img src="docs/banner.svg" alt="Ancient Locs — Motif Encyclopedia" width="900" />
 </p>
 
-# Ancient Locs — Motif Encyclopedia
-
 An ancient art motif encyclopedia that extracts, embeds, and compares decorative motifs across all publicly available artifact imagery — cave art, relief carvings, pottery, mosaics, seals, and textiles — to reveal visual pattern alignment across cultures, geographies, and time periods.
 
 ## How It Works
 
 The pipeline takes **8,860 archaeological sites** from [ancientlocations.net](http://www.ancientlocations.net/), enriches them with artifact records from 5 public APIs, uses **CLIPSeg** to isolate decorative motif regions from artifact photos, generates **CLIP embeddings** on the isolated segments, clusters them with **HDBSCAN** to discover emergent motif types, and generates canonical SVGs for each discovered cluster.
 
-```
-places.json ──→ Site Matching ──→ Artifact Harvesting ──→ Image Collection
-                  (Wikidata)       (5 APIs, dedup)         (checkpointed)
-                                                                │
-    ┌───────────────────────────────────────────────────────────┘
-    ▼
-CLIPSeg Segmentation ──→ CLIP Embedding ──→ Similarity + Clustering ──→ Export
-  (motif isolation)       (segment vectors)   (HDBSCAN, canonical SVGs)   (static JSON)
+```mermaid
+graph LR
+    A[places.json] --> B[Site Matching<br/><i>Wikidata</i>]
+    B --> C[Artifact Harvesting<br/><i>5 APIs, dedup</i>]
+    C --> D[Image Collection<br/><i>checkpointed</i>]
+    D --> E[CLIPSeg Segmentation<br/><i>motif isolation</i>]
+    E --> F[CLIP Embedding<br/><i>segment vectors</i>]
+    F --> G[Similarity + Clustering<br/><i>HDBSCAN, canonical SVGs</i>]
+    G --> H[Export<br/><i>static JSON</i>]
 ```
 
 ## Getting Started
@@ -118,7 +117,7 @@ python -m pytest tests/ -v
 | Stage 7: Static export | :white_check_mark: Complete | Chunked JSON, size budget enforcement |
 | Pipeline orchestrator | :white_check_mark: Complete | `python -m pipeline.run` |
 | Test suite (73 tests) | :white_check_mark: Passing | All stages covered |
-| First pipeline run | :hourglass_flowing_sand: Pending | Awaiting execution on full dataset |
+| First pipeline run (DEV) | :white_check_mark: Complete | 100 sites, 303 artifacts, 115 embeddings, 3 clusters (silhouette 0.23) |
 | Next.js frontend | :hourglass_flowing_sand: Pending | MapLibre map, motif explorer |
 | GitHub Pages deployment | :hourglass_flowing_sand: Pending | Static export → GH Pages |
 
