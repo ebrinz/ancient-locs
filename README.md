@@ -9,7 +9,7 @@ An ancient art motif encyclopedia that extracts, embeds, and compares decorative
 The pipeline takes **8,860 archaeological sites** from [ancientlocations.net](http://www.ancientlocations.net/), enriches them with artifact records from 5 public APIs, uses **CLIPSeg** to isolate decorative motif regions from artifact photos, generates **CLIP embeddings** on the isolated segments, clusters them with **HDBSCAN** to discover emergent motif types, and generates canonical SVGs for each discovered cluster.
 
 ```mermaid
-graph LR
+flowchart TD
     A[places.json] --> B[Site Matching<br/><i>Wikidata</i>]
     B --> C[Artifact Harvesting<br/><i>5 APIs, dedup</i>]
     C --> D[Image Collection<br/><i>checkpointed</i>]
