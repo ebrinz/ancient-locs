@@ -36,10 +36,24 @@ def parse_met_object(
     date_start = raw.get("objectBeginDate")
     date_end = raw.get("objectEndDate")
 
+    # Build a rich description from all available text fields.
+    # The API returns structured tags (AAT vocabulary), culture, medium, and
+    # objectName — combine them so downstream motif-tag extraction has
+    # something meaningful to match against.
+    desc_parts = [raw.get("objectName", "")]
+    if raw.get("culture"):
+        desc_parts.append(raw["culture"])
+    if raw.get("medium"):
+        desc_parts.append(raw["medium"])
+    tag_terms = [t.get("term", "") for t in (raw.get("tags") or []) if t.get("term")]
+    if tag_terms:
+        desc_parts.append("; ".join(tag_terms))
+    description = " | ".join(p for p in desc_parts if p)
+
     artifact = Artifact(
         id=artifact_id,
         name=raw.get("title", ""),
-        description=raw.get("objectName", ""),
+        description=description,
         type=raw.get("classification", "artifact"),
         site_id=site_id,
         region=region,

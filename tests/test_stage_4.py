@@ -28,8 +28,8 @@ class TestFilterSegments:
         assert kept == []
 
     def test_rejects_too_large(self):
-        # area_ratio = 5000 / 10000 = 0.5  (above 0.40)
-        stats = self._make_stats([(0, 0, 100, 50, 5000)])
+        # area_ratio = 6000 / 10000 = 0.6  (above 0.55)
+        stats = self._make_stats([(0, 0, 100, 60, 6000)])
         kept = filter_segments(stats, image_area=10000)
         assert kept == []
 

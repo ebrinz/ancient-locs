@@ -15,23 +15,48 @@ from pipeline.provenance import create_provenance, load_manifest, save_manifest
 logger = logging.getLogger(__name__)
 
 # Regex patterns for motif classification from textual metadata.
+# Expanded vocabulary to match museum API descriptions, AAT tag terms,
+# medium/technique strings, and culture fields — not just narrow art-history terms.
 MOTIF_PATTERNS: dict[str, re.Pattern] = {
+    # Geometric motifs
     "spiral": re.compile(r"\bspiral\b", re.IGNORECASE),
     "meander": re.compile(r"\bmeander\b", re.IGNORECASE),
-    "cross": re.compile(r"\bcross\b", re.IGNORECASE),
+    "cross": re.compile(r"\bcross(?:es)?\b", re.IGNORECASE),
     "chevron": re.compile(r"\bchevron\b", re.IGNORECASE),
     "wave": re.compile(r"\bwave\b", re.IGNORECASE),
     "guilloche": re.compile(r"\bguilloche\b", re.IGNORECASE),
     "rosette": re.compile(r"\brosette\b", re.IGNORECASE),
     "palmette": re.compile(r"\bpalmette\b", re.IGNORECASE),
-    "zigzag": re.compile(r"\bzigzag\b", re.IGNORECASE),
+    "zigzag": re.compile(r"\bzig-?zag\b", re.IGNORECASE),
     "concentric_circles": re.compile(r"\bconcentric\s+circle", re.IGNORECASE),
     "hatching": re.compile(r"\bhatch(?:ing|ed)\b", re.IGNORECASE),
     "geometric": re.compile(r"\bgeometric\b", re.IGNORECASE),
     "floral": re.compile(r"\bfloral\b", re.IGNORECASE),
-    "figural": re.compile(r"\bfigur(?:al|ative)\b", re.IGNORECASE),
+    "figural": re.compile(r"\bfigur(?:al|ative|e)\b", re.IGNORECASE),
     "animal": re.compile(r"\banimal\b", re.IGNORECASE),
     "anthropomorphic": re.compile(r"\banthropomorphic\b", re.IGNORECASE),
+    # Broader decorative vocabulary (common in museum descriptions)
+    "relief": re.compile(r"\brelief\b", re.IGNORECASE),
+    "engraved": re.compile(r"\bengrav(?:ed|ing)\b", re.IGNORECASE),
+    "painted": re.compile(r"\bpaint(?:ed|ing)\b", re.IGNORECASE),
+    "carved": re.compile(r"\bcarv(?:ed|ing)\b", re.IGNORECASE),
+    "mosaic": re.compile(r"\bmosaic\b", re.IGNORECASE),
+    "enamel": re.compile(r"\benamel\b", re.IGNORECASE),
+    "inlaid": re.compile(r"\binla(?:id|y)\b", re.IGNORECASE),
+    "gilded": re.compile(r"\bgild(?:ed|ing)\b", re.IGNORECASE),
+    # Ceramic technique terms (Met 'medium' field)
+    "red_figure": re.compile(r"\bred[- ]figure\b", re.IGNORECASE),
+    "black_figure": re.compile(r"\bblack[- ]figure\b", re.IGNORECASE),
+    "cloisonne": re.compile(r"\bcloisonn[eé]\b", re.IGNORECASE),
+    "terracotta": re.compile(r"\bterracotta\b", re.IGNORECASE),
+    # Figurative subject terms (common in Met API tags)
+    "griffin": re.compile(r"\bgriffin\b", re.IGNORECASE),
+    "lion": re.compile(r"\blion\b", re.IGNORECASE),
+    "horse": re.compile(r"\bhorse\b", re.IGNORECASE),
+    "bird": re.compile(r"\bbird\b", re.IGNORECASE),
+    "serpent": re.compile(r"\bserpent\b|\bsnake\b", re.IGNORECASE),
+    "sphinx": re.compile(r"\bsphinx\b", re.IGNORECASE),
+    "chariot": re.compile(r"\bchariot\b", re.IGNORECASE),
 }
 
 
@@ -110,9 +135,17 @@ def run(artifacts_dir: str = ARTIFACTS_DIR) -> None:
                 data = json.load(f)
 
             artifact = data.get("artifact", {})
-            text_blob = " ".join(
-                filter(None, [artifact.get("name", ""), artifact.get("description", "")])
-            )
+            # Build a comprehensive text blob from all available fields —
+            # name, description, type, materials, and techniques — so tag
+            # extraction has the widest possible surface to match against.
+            text_parts = [
+                artifact.get("name", ""),
+                artifact.get("description", ""),
+                artifact.get("type", ""),
+            ]
+            text_parts.extend(artifact.get("materials", []))
+            text_parts.extend(artifact.get("techniques", []))
+            text_blob = " ".join(filter(None, text_parts))
             tags = extract_motif_tags(text_blob)
             if tags and tags != artifact.get("motif_tags"):
                 artifact["motif_tags"] = tags

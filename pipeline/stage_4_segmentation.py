@@ -123,13 +123,24 @@ def trace_to_svg(input_path: str, output_path: str) -> bool:
     """
     try:
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
-        subprocess.run(
+        result = subprocess.run(
             ["vtracer", "--input", input_path, "--output", output_path],
             check=True,
             capture_output=True,
             timeout=30,
         )
         return True
+    except subprocess.CalledProcessError as exc:
+        logger.warning(
+            "vtracer failed for %s (exit %d): %s",
+            input_path,
+            exc.returncode,
+            exc.stderr.decode(errors="replace")[:200] if exc.stderr else "",
+        )
+        return False
+    except FileNotFoundError:
+        logger.error("vtracer binary not found — install via: cargo install vtracer")
+        return False
     except Exception as exc:
         logger.warning("vtracer failed for %s: %s", input_path, exc)
         return False
@@ -190,7 +201,12 @@ def segment_image(
             if SVG_MIN_PATHS <= n_paths <= SVG_MAX_PATHS:
                 final_svg_path = svg_path
             else:
-                logger.debug("SVG rejected (%d paths): %s", n_paths, svg_path)
+                logger.info(
+                    "SVG rejected (%d paths, need %d-%d): %s",
+                    n_paths, SVG_MIN_PATHS, SVG_MAX_PATHS, svg_path,
+                )
+        elif not svg_ok:
+            logger.info("vtracer failed for segment %s of %s", segment_id, artifact_id)
 
         prov = create_provenance(
             source_id=f"clipseg:{image_id}",
@@ -229,6 +245,9 @@ def run(artifacts_dir: str = ARTIFACTS_DIR) -> None:
     os.makedirs(segments_dir, exist_ok=True)
 
     total = 0
+    total_svg_ok = 0
+    total_svg_rejected = 0
+    total_svg_failed = 0
 
     for fname in sorted(os.listdir(artifacts_dir)):
         if not fname.endswith(".json"):
@@ -263,10 +282,21 @@ def run(artifacts_dir: str = ARTIFACTS_DIR) -> None:
                 with open(seg_path, "w") as f:
                     json.dump(seg.to_dict(), f, indent=2)
 
+            for seg in segs:
+                if seg.svg_path:
+                    total_svg_ok += 1
+                else:
+                    total_svg_rejected += 1
             total += len(segs)
             logger.info("Segmented %s/%s: %d motifs", artifact_id, image_id, len(segs))
 
-    logger.info("Stage 4 complete: %d total segments", total)
+    logger.info(
+        "Stage 4 complete: %d segments (%d SVG ok, %d SVG rejected, %d vtracer failures)",
+        total,
+        total_svg_ok,
+        total_svg_rejected,
+        total_svg_failed,
+    )
 
 
 if __name__ == "__main__":

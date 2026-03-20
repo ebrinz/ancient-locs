@@ -25,10 +25,20 @@ def parse_harvard_object(
     date_start = raw.get("datebegin")
     date_end = raw.get("dateend")
 
+    # Build a richer description from all available text fields.
+    desc_parts = [raw.get("description", "") or ""]
+    if raw.get("culture"):
+        desc_parts.append(raw["culture"])
+    if raw.get("technique"):
+        desc_parts.append(raw["technique"])
+    if medium:
+        desc_parts.append(medium)
+    description = " | ".join(p for p in desc_parts if p)
+
     artifact = Artifact(
         id=artifact_id,
         name=raw.get("title", ""),
-        description=raw.get("description", "") or "",
+        description=description,
         type=raw.get("classification", "artifact"),
         site_id=site_id,
         region=region,
